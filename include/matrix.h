@@ -23,4 +23,7 @@ struct Matrix {
 // Naive triple-loop matrix multiplication: C = A * B
 void multiply_naive(const Matrix& A, const Matrix& B, Matrix& C);
 
+// Optimization v1: Loop Reordering (i-k-j) for better cache locality
+void multiply_optimized_v1(const Matrix& A, const Matrix& B, Matrix& C);
+
 #endif // MATRIX_H

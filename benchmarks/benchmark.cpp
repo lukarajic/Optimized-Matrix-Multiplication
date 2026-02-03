@@ -5,49 +5,50 @@
 #include "matrix.h"
 
 // Helper function to measure performance
-void run_benchmark(size_t size, int iterations) {
+void run_benchmark(size_t size) {
     Matrix A(size, size);
     Matrix B(size, size);
     Matrix C(size, size);
 
-    // Initialize matrices with some values
-    for (size_t i = 0; i < size; ++i) {
-        for (size_t j = 0; j < size; ++j) {
-            A(i, j) = static_cast<float>(i + j);
-            B(i, j) = static_cast<float>(i - j);
+    for (size_t i = 0; i < size * size; ++i) {
+        A.data[i] = static_cast<float>(i);
+        B.data[i] = static_cast<float>(i);
+    }
+
+    auto benchmark_func = [&](auto func, const std::string& name) {
+        // Warmup
+        func(A, B, C);
+        
+        auto start = std::chrono::high_resolution_clock::now();
+        int iterations = (size <= 256) ? 10 : 2;
+        for (int i = 0; i < iterations; ++i) {
+            func(A, B, C);
         }
-    }
+        auto end = std::chrono::high_resolution_clock::now();
 
-    // Warmup run
-    multiply_naive(A, B, C);
+        std::chrono::duration<double> elapsed = end - start;
+        double avg_time = elapsed.count() / iterations;
+        double ops = 2.0 * size * size * size;
+        double gflops = (ops / avg_time) / 1e9;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < iterations; ++i) {
-        multiply_naive(A, B, C);
-    }
-    auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "  " << std::left << std::setw(15) << name 
+                  << " | GFLOPS: " << std::fixed << std::setprecision(2) << gflops 
+                  << " | Time: " << std::setprecision(4) << avg_time << "s" << std::endl;
+    };
 
-    std::chrono::duration<double> elapsed = end - start;
-    double avg_time = elapsed.count() / iterations;
-    
-    // 2 * N^3 operations per multiplication (multiply + add)
-    double ops = 2.0 * size * size * size;
-    double gflops = (ops / avg_time) / 1e9;
-
-    std::cout << "Size: " << std::setw(4) << size << "x" << size 
-              << " | Time: " << std::setw(8) << std::fixed << std::setprecision(4) << avg_time << " s"
-              << " | GFLOPS: " << std::setw(6) << std::fixed << std::setprecision(2) << gflops 
-              << std::endl;
+    std::cout << "Matrix Size: " << size << "x" << size << std::endl;
+    benchmark_func(multiply_naive, "Naive (i-j-k)");
+    benchmark_func(multiply_optimized_v1, "Opt V1 (i-k-j)");
+    std::cout << "--------------------------------------------------------" << std::endl;
 }
 
 int main() {
-    std::cout << "Benchmarking Naive Matrix Multiplication:" << std::endl;
+    std::cout << "Matrix Multiplication Benchmarks" << std::endl;
+    std::cout << "--------------------------------------------------------" << std::endl;
     
-    // Test cases: Size, Iterations
-    // Using smaller sizes/counts initially to keep it quick
-    run_benchmark(128, 10);
-    run_benchmark(256, 5);
-    run_benchmark(512, 2); 
+    run_benchmark(128);
+    run_benchmark(256);
+    run_benchmark(512); 
     
     return 0;
 }
