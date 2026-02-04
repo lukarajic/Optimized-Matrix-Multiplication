@@ -26,4 +26,7 @@ void multiply_naive(const Matrix& A, const Matrix& B, Matrix& C);
 // Optimization v1: Loop Reordering (i-k-j) for better cache locality
 void multiply_optimized_v1(const Matrix& A, const Matrix& B, Matrix& C);
 
+// Optimization v2: Tiling (Blocking) to improve temporal cache locality
+void multiply_optimized_v2_tiled(const Matrix& A, const Matrix& B, Matrix& C, size_t blockSize = 32);
+
 #endif // MATRIX_H

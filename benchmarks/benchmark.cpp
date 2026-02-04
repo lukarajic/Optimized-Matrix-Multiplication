@@ -39,6 +39,9 @@ void run_benchmark(size_t size) {
     std::cout << "Matrix Size: " << size << "x" << size << std::endl;
     benchmark_func(multiply_naive, "Naive (i-j-k)");
     benchmark_func(multiply_optimized_v1, "Opt V1 (i-k-j)");
+    benchmark_func([](const Matrix& A, const Matrix& B, Matrix& C) {
+        multiply_optimized_v2_tiled(A, B, C, 32);
+    }, "Opt V2 (Tiled)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 
@@ -49,6 +52,7 @@ int main() {
     run_benchmark(128);
     run_benchmark(256);
     run_benchmark(512); 
+    run_benchmark(1024);
     
     return 0;
 }
