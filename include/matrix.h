@@ -29,4 +29,7 @@ void multiply_optimized_v1(const Matrix& A, const Matrix& B, Matrix& C);
 // Optimization v2: Tiling (Blocking) to improve temporal cache locality
 void multiply_optimized_v2_tiled(const Matrix& A, const Matrix& B, Matrix& C, size_t blockSize = 32);
 
+// Optimization v3: Loop Unrolling (4x) on the i-k-j version
+void multiply_optimized_v3_unrolled(const Matrix& A, const Matrix& B, Matrix& C);
+
 #endif // MATRIX_H

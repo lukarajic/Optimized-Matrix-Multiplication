@@ -42,6 +42,7 @@ void run_benchmark(size_t size) {
     benchmark_func([](const Matrix& A, const Matrix& B, Matrix& C) {
         multiply_optimized_v2_tiled(A, B, C, 32);
     }, "Opt V2 (Tiled)");
+    benchmark_func(multiply_optimized_v3_unrolled, "Opt V3 (Unroll)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 

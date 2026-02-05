@@ -69,3 +69,29 @@ void multiply_optimized_v2_tiled(const Matrix& A, const Matrix& B, Matrix& C, si
         }
     }
 }
+
+void multiply_optimized_v3_unrolled(const Matrix& A, const Matrix& B, Matrix& C) {
+    if (A.cols != B.rows || C.rows != A.rows || C.cols != B.cols) {
+        throw std::invalid_argument("Matrix dimensions mismatch.");
+    }
+
+    std::fill(C.data.begin(), C.data.end(), 0.0f);
+
+    for (size_t i = 0; i < A.rows; ++i) {
+        for (size_t k = 0; k < A.cols; ++k) {
+            float rA = A(i, k);
+            size_t j = 0;
+            // Unroll by 4
+            for (; j + 3 < B.cols; j += 4) {
+                C(i, j) += rA * B(k, j);
+                C(i, j + 1) += rA * B(k, j + 1);
+                C(i, j + 2) += rA * B(k, j + 2);
+                C(i, j + 3) += rA * B(k, j + 3);
+            }
+            // Cleanup loop
+            for (; j < B.cols; ++j) {
+                C(i, j) += rA * B(k, j);
+            }
+        }
+    }
+}
