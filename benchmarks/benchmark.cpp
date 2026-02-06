@@ -43,6 +43,7 @@ void run_benchmark(size_t size) {
         multiply_optimized_v2_tiled(A, B, C, 32);
     }, "Opt V2 (Tiled)");
     benchmark_func(multiply_optimized_v3_unrolled, "Opt V3 (Unroll)");
+    benchmark_func(multiply_optimized_v4_simd, "Opt V4 (SIMD)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 

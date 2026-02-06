@@ -95,3 +95,42 @@ void multiply_optimized_v3_unrolled(const Matrix& A, const Matrix& B, Matrix& C)
         }
     }
 }
+
+void multiply_optimized_v4_simd(const Matrix& A, const Matrix& B, Matrix& C) {
+    if (A.cols != B.rows || C.rows != A.rows || C.cols != B.cols) {
+        throw std::invalid_argument("Matrix dimensions mismatch.");
+    }
+
+    std::fill(C.data.begin(), C.data.end(), 0.0f);
+
+    for (size_t i = 0; i < A.rows; ++i) {
+        for (size_t k = 0; k < A.cols; ++k) {
+            float rA = A(i, k);
+            size_t j = 0;
+
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+            float32x4_t vA = vdupq_n_f32(rA);
+            for (; j + 3 < B.cols; j += 4) {
+                float32x4_t vB = vld1q_f32(&B(k, j));
+                float32x4_t vC = vld1q_f32(&C(i, j));
+                // vC = vA * vB + vC
+                vC = vfmaq_f32(vC, vA, vB); 
+                vst1q_f32(&C(i, j), vC);
+            }
+#elif defined(__AVX2__)
+            __m256 vA = _mm256_set1_ps(rA);
+            for (; j + 7 < B.cols; j += 8) {
+                __m256 vB = _mm256_loadu_ps(&B(k, j));
+                __m256 vC = _mm256_loadu_ps(&C(i, j));
+                vC = _mm256_fmadd_ps(vA, vB, vC);
+                _mm256_storeu_ps(&C(i, j), vC);
+            }
+#endif
+
+            // Cleanup loop for remaining elements
+            for (; j < B.cols; ++j) {
+                C(i, j) += rA * B(k, j);
+            }
+        }
+    }
+}

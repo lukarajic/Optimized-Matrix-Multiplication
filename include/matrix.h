@@ -4,6 +4,12 @@
 #include <vector>
 #include <cstddef>
 
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include <arm_neon.h>
+#elif defined(__x86_64__) || defined(_M_X64)
+#include <immintrin.h>
+#endif
+
 struct Matrix {
     size_t rows;
     size_t cols;
@@ -31,5 +37,8 @@ void multiply_optimized_v2_tiled(const Matrix& A, const Matrix& B, Matrix& C, si
 
 // Optimization v3: Loop Unrolling (4x) on the i-k-j version
 void multiply_optimized_v3_unrolled(const Matrix& A, const Matrix& B, Matrix& C);
+
+// Optimization v4: SIMD Vectorization (NEON on ARM, AVX2 on x86)
+void multiply_optimized_v4_simd(const Matrix& A, const Matrix& B, Matrix& C);
 
 #endif // MATRIX_H
