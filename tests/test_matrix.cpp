@@ -41,7 +41,8 @@ int main() {
     std::vector<TestCase> cases = {
         {"Opt V1 (i-k-j)", multiply_optimized_v1},
         {"Opt V3 (Unroll)", multiply_optimized_v3_unrolled},
-        {"Opt V4 (SIMD)", multiply_optimized_v4_simd}
+        {"Opt V4 (SIMD)", multiply_optimized_v4_simd},
+        {"Opt V5 (Thread)", [](const Matrix& A, const Matrix& B, Matrix& C) { multiply_optimized_v5_threaded(A, B, C); }}
     };
 
     bool all_passed = true;

@@ -44,6 +44,9 @@ void run_benchmark(size_t size) {
     }, "Opt V2 (Tiled)");
     benchmark_func(multiply_optimized_v3_unrolled, "Opt V3 (Unroll)");
     benchmark_func(multiply_optimized_v4_simd, "Opt V4 (SIMD)");
+    benchmark_func([](const Matrix& A, const Matrix& B, Matrix& C) {
+        multiply_optimized_v5_threaded(A, B, C);
+    }, "Opt V5 (Thread)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 

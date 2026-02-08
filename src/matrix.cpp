@@ -1,5 +1,8 @@
 #include "matrix.h"
 #include <stdexcept>
+#include <algorithm>
+#include <thread>
+#include <vector>
 
 void multiply_naive(const Matrix& A, const Matrix& B, Matrix& C) {
     if (A.cols != B.rows) {
@@ -132,5 +135,44 @@ void multiply_optimized_v4_simd(const Matrix& A, const Matrix& B, Matrix& C) {
                 C(i, j) += rA * B(k, j);
             }
         }
+    }
+}
+
+void multiply_optimized_v5_threaded(const Matrix& A, const Matrix& B, Matrix& C, unsigned int numThreads) {
+    if (A.cols != B.rows || C.rows != A.rows || C.cols != B.cols) {
+        throw std::invalid_argument("Matrix dimensions mismatch.");
+    }
+
+    if (numThreads == 0) {
+        numThreads = std::thread::hardware_concurrency();
+        if (numThreads == 0) numThreads = 2; // Fallback
+    }
+
+    std::fill(C.data.begin(), C.data.end(), 0.0f);
+
+    auto worker = [&](size_t startRow, size_t endRow) {
+        for (size_t i = startRow; i < endRow; ++i) {
+            for (size_t k = 0; k < A.cols; ++k) {
+                float rA = A(i, k);
+                for (size_t j = 0; j < B.cols; ++j) {
+                    C(i, j) += rA * B(k, j);
+                }
+            }
+        }
+    };
+
+    std::vector<std::thread> threads;
+    size_t rowsPerThread = A.rows / numThreads;
+
+    for (unsigned int t = 0; t < numThreads; ++t) {
+        size_t startRow = t * rowsPerThread;
+        size_t endRow = (t == numThreads - 1) ? A.rows : (t + 1) * rowsPerThread;
+        if (startRow < endRow) {
+            threads.emplace_back(worker, startRow, endRow);
+        }
+    }
+
+    for (auto& t : threads) {
+        t.join();
     }
 }

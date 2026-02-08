@@ -41,4 +41,7 @@ void multiply_optimized_v3_unrolled(const Matrix& A, const Matrix& B, Matrix& C)
 // Optimization v4: SIMD Vectorization (NEON on ARM, AVX2 on x86)
 void multiply_optimized_v4_simd(const Matrix& A, const Matrix& B, Matrix& C);
 
+// Optimization v5: Multi-threading with std::thread
+void multiply_optimized_v5_threaded(const Matrix& A, const Matrix& B, Matrix& C, unsigned int numThreads = 0);
+
 #endif // MATRIX_H
