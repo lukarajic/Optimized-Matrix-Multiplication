@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <cstddef>
+#include <memory>
+#include <new>
 
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
@@ -10,12 +12,37 @@
 #include <immintrin.h>
 #endif
 
+// Custom allocator for aligned memory
+template <typename T, std::size_t Alignment>
+struct AlignedAllocator {
+    using value_type = T;
+    AlignedAllocator() noexcept = default;
+    template <typename U> AlignedAllocator(const AlignedAllocator<U, Alignment>&) noexcept {}
+
+    T* allocate(std::size_t n) {
+        if (n == 0) return nullptr;
+        void* ptr = nullptr;
+        if (posix_memalign(&ptr, Alignment, n * sizeof(T)) != 0) {
+            throw std::bad_alloc();
+        }
+        return static_cast<T*>(ptr);
+    }
+
+    void deallocate(T* p, std::size_t) noexcept {
+        free(p);
+    }
+
+    template <typename U> struct rebind { using other = AlignedAllocator<U, Alignment>; };
+};
+
 struct Matrix {
     size_t rows;
     size_t cols;
-    std::vector<float> data;
+    std::vector<float, AlignedAllocator<float, 64>> data;
 
-    Matrix(size_t r, size_t c) : rows(r), cols(c), data(r * c, 0.0f) {}
+    Matrix(size_t r, size_t c) : rows(r), cols(c), data(r * c, AlignedAllocator<float, 64>()) {
+        std::fill(data.begin(), data.end(), 0.0f);
+    }
 
     float& operator()(size_t r, size_t c) {
         return data[r * cols + c];

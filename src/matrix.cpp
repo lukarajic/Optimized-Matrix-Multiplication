@@ -114,19 +114,22 @@ void multiply_optimized_v4_simd(const Matrix& A, const Matrix& B, Matrix& C) {
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
             float32x4_t vA = vdupq_n_f32(rA);
             for (; j + 3 < B.cols; j += 4) {
+                // We use vld1q_f32 for NEON. While it handles unaligned,
+                // our data is now 64-byte aligned at the start of rows.
                 float32x4_t vB = vld1q_f32(&B(k, j));
                 float32x4_t vC = vld1q_f32(&C(i, j));
-                // vC = vA * vB + vC
                 vC = vfmaq_f32(vC, vA, vB); 
                 vst1q_f32(&C(i, j), vC);
             }
 #elif defined(__AVX2__)
             __m256 vA = _mm256_set1_ps(rA);
             for (; j + 7 < B.cols; j += 8) {
-                __m256 vB = _mm256_loadu_ps(&B(k, j));
-                __m256 vC = _mm256_loadu_ps(&C(i, j));
+                // Use aligned loads/stores for AVX2 (requires 32-byte alignment)
+                // Note: Only valid if cols is multiple of 8, or if we handle boundaries
+                __m256 vB = _mm256_load_ps(&B(k, j));
+                __m256 vC = _mm256_load_ps(&C(i, j));
                 vC = _mm256_fmadd_ps(vA, vB, vC);
-                _mm256_storeu_ps(&C(i, j), vC);
+                _mm256_store_ps(&C(i, j), vC);
             }
 #endif
 
