@@ -74,4 +74,7 @@ void multiply_optimized_v5_threaded(const Matrix& A, const Matrix& B, Matrix& C,
 // Optimization v6: Register Blocking (2x2) to increase arithmetic intensity
 void multiply_optimized_v6_register_blocked_2x2(const Matrix& A, const Matrix& B, Matrix& C);
 
+// Optimization v7: Multi-threading with Register Blocking (2x2)
+void multiply_optimized_v7_threaded_register_blocked(const Matrix& A, const Matrix& B, Matrix& C, unsigned int numThreads = 0);
+
 #endif // MATRIX_H

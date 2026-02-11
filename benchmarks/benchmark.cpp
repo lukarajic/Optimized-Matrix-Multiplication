@@ -48,6 +48,9 @@ void run_benchmark(size_t size) {
         multiply_optimized_v5_threaded(A, B, C);
     }, "Opt V5 (Thread)");
     benchmark_func(multiply_optimized_v6_register_blocked_2x2, "Opt V6 (RegBlk)");
+    benchmark_func([](const Matrix& A, const Matrix& B, Matrix& C) {
+        multiply_optimized_v7_threaded_register_blocked(A, B, C);
+    }, "Opt V7 (Thread+RegBlk)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 

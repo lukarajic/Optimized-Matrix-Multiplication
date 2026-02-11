@@ -226,3 +226,72 @@ void multiply_optimized_v6_register_blocked_2x2(const Matrix& A, const Matrix& B
         }
     }
 }
+
+void multiply_optimized_v7_threaded_register_blocked(const Matrix& A, const Matrix& B, Matrix& C, unsigned int numThreads) {
+    if (A.cols != B.rows || C.rows != A.rows || C.cols != B.cols) {
+        throw std::invalid_argument("Matrix dimensions mismatch.");
+    }
+
+    if (numThreads == 0) {
+        numThreads = std::thread::hardware_concurrency();
+        if (numThreads == 0) numThreads = 2; // Fallback
+    }
+
+    std::fill(C.data.begin(), C.data.end(), 0.0f);
+
+    size_t n = A.rows; // Assuming square matrices for simplicity
+
+    auto worker = [&](size_t startRow, size_t endRow) {
+        for (size_t i = startRow; i < endRow; i += 2) {
+            // Handle odd row at bottom
+            if (i + 1 >= n) {
+                for (size_t k = 0; k < A.cols; ++k) {
+                    float rA = A(i, k);
+                    for (size_t j = 0; j < B.cols; ++j) {
+                        C(i, j) += rA * B(k, j);
+                    }
+                }
+                continue;
+            }
+
+            for (size_t k = 0; k < A.cols; ++k) {
+                float rA0 = A(i, k);
+                float rA1 = A(i + 1, k);
+
+                size_t j = 0;
+                // Main 2x2 loop
+                for (; j + 1 < B.cols; j += 2) {
+                    float rB0 = B(k, j);
+                    float rB1 = B(k, j + 1);
+
+                    C(i, j)     += rA0 * rB0;
+                    C(i, j + 1) += rA0 * rB1;
+                    C(i + 1, j) += rA1 * rB0;
+                    C(i + 1, j + 1) += rA1 * rB1;
+                }
+                
+                // Cleanup columns
+                for (; j < B.cols; ++j) {
+                    float rB = B(k, j);
+                    C(i, j) += rA0 * rB;
+                    C(i + 1, j) += rA1 * rB;
+                }
+            }
+        }
+    };
+
+    std::vector<std::thread> threads;
+    size_t rowsPerThread = (n + numThreads - 1) / numThreads; // ceiling division
+
+    for (unsigned int t = 0; t < numThreads; ++t) {
+        size_t startRow = t * rowsPerThread;
+        size_t endRow = std::min(startRow + rowsPerThread, n);
+        if (startRow < endRow) {
+            threads.emplace_back(worker, startRow, endRow);
+        }
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+}
