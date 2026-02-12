@@ -80,4 +80,10 @@ void multiply_optimized_v7_threaded_register_blocked(const Matrix& A, const Matr
 // Optimization v8: Software Prefetching to hide memory latency
 void multiply_optimized_v8_prefetch(const Matrix& A, const Matrix& B, Matrix& C);
 
+// Helper for V9: Transpose a matrix
+Matrix transpose(const Matrix& M);
+
+// Optimization v9: Matrix Transposition + i-j-k loop (Dot Product)
+void multiply_optimized_v9_transpose(const Matrix& A, const Matrix& B, Matrix& C);
+
 #endif // MATRIX_H

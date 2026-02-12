@@ -45,7 +45,8 @@ int main() {
         {"Opt V5 (Thread)", [](const Matrix& A, const Matrix& B, Matrix& C) { multiply_optimized_v5_threaded(A, B, C); }},
         {"Opt V6 (RegBlk)", multiply_optimized_v6_register_blocked_2x2},
         {"Opt V7 (Thread+RegBlk)", [](const Matrix& A, const Matrix& B, Matrix& C) { multiply_optimized_v7_threaded_register_blocked(A, B, C); }},
-        {"Opt V8 (Prefetch)", multiply_optimized_v8_prefetch}
+        {"Opt V8 (Prefetch)", multiply_optimized_v8_prefetch},
+        {"Opt V9 (Transp)", multiply_optimized_v9_transpose}
     };
 
     bool all_passed = true;

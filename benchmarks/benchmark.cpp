@@ -52,6 +52,7 @@ void run_benchmark(size_t size) {
         multiply_optimized_v7_threaded_register_blocked(A, B, C);
     }, "Opt V7 (Thread+RegBlk)");
     benchmark_func(multiply_optimized_v8_prefetch, "Opt V8 (Prefetch)");
+    benchmark_func(multiply_optimized_v9_transpose, "Opt V9 (Transp)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 
