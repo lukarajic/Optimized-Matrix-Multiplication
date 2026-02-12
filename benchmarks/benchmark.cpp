@@ -2,10 +2,11 @@
 #include <vector>
 #include <chrono>
 #include <iomanip>
+#include <fstream>
 #include "matrix.h"
 
 // Helper function to measure performance
-void run_benchmark(size_t size) {
+void run_benchmark(size_t size, std::ofstream& out_file) {
     Matrix A(size, size);
     Matrix B(size, size);
     Matrix C(size, size);
@@ -14,6 +15,11 @@ void run_benchmark(size_t size) {
         A.data[i] = static_cast<float>(i);
         B.data[i] = static_cast<float>(i);
     }
+
+    // Write table header for this size
+    out_file << "### Matrix Size: " << size << "x" << size << "\n\n";
+    out_file << "| Optimization | GFLOPS | Time (s) |\n";
+    out_file << "| :--- | :--- | :--- |\n";
 
     auto benchmark_func = [&](auto func, const std::string& name) {
         // Warmup
@@ -31,9 +37,14 @@ void run_benchmark(size_t size) {
         double ops = 2.0 * size * size * size;
         double gflops = (ops / avg_time) / 1e9;
 
-        std::cout << "  " << std::left << std::setw(15) << name 
+        // Console output
+        std::cout << "  " << std::left << std::setw(20) << name 
                   << " | GFLOPS: " << std::fixed << std::setprecision(2) << gflops 
                   << " | Time: " << std::setprecision(4) << avg_time << "s" << std::endl;
+        
+        // File output
+        out_file << "| " << name << " | " << std::fixed << std::setprecision(2) << gflops 
+                 << " | " << std::setprecision(4) << avg_time << " |\n";
     };
 
     std::cout << "Matrix Size: " << size << "x" << size << std::endl;
@@ -50,9 +61,11 @@ void run_benchmark(size_t size) {
     benchmark_func(multiply_optimized_v6_register_blocked_2x2, "Opt V6 (RegBlk)");
     benchmark_func([](const Matrix& A, const Matrix& B, Matrix& C) {
         multiply_optimized_v7_threaded_register_blocked(A, B, C);
-    }, "Opt V7 (Thread+RegBlk)");
+    }, "Opt V7 (Thrd+RegBlk)");
     benchmark_func(multiply_optimized_v8_prefetch, "Opt V8 (Prefetch)");
     benchmark_func(multiply_optimized_v9_transpose, "Opt V9 (Transp)");
+    
+    out_file << "\n";
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 
@@ -60,10 +73,15 @@ int main() {
     std::cout << "Matrix Multiplication Benchmarks" << std::endl;
     std::cout << "--------------------------------------------------------" << std::endl;
     
-    run_benchmark(128);
-    run_benchmark(256);
-    run_benchmark(512); 
-    run_benchmark(1024);
+    std::ofstream out_file("benchmark_results.md");
+    out_file << "# Benchmark Results\n\n";
+    out_file << "Run on " << __DATE__ << " at " << __TIME__ << "\n\n";
+
+    run_benchmark(128, out_file);
+    run_benchmark(256, out_file);
+    run_benchmark(512, out_file); 
+    run_benchmark(1024, out_file);
     
+    std::cout << "Results written to benchmark_results.md" << std::endl;
     return 0;
 }
