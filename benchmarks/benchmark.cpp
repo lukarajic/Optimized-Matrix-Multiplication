@@ -51,6 +51,7 @@ void run_benchmark(size_t size) {
     benchmark_func([](const Matrix& A, const Matrix& B, Matrix& C) {
         multiply_optimized_v7_threaded_register_blocked(A, B, C);
     }, "Opt V7 (Thread+RegBlk)");
+    benchmark_func(multiply_optimized_v8_prefetch, "Opt V8 (Prefetch)");
     std::cout << "--------------------------------------------------------" << std::endl;
 }
 

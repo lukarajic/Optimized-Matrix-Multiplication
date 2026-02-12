@@ -295,3 +295,27 @@ void multiply_optimized_v7_threaded_register_blocked(const Matrix& A, const Matr
         t.join();
     }
 }
+
+void multiply_optimized_v8_prefetch(const Matrix& A, const Matrix& B, Matrix& C) {
+    if (A.cols != B.rows || C.rows != A.rows || C.cols != B.cols) {
+        throw std::invalid_argument("Matrix dimensions mismatch.");
+    }
+
+    std::fill(C.data.begin(), C.data.end(), 0.0f);
+
+    for (size_t i = 0; i < A.rows; ++i) {
+        for (size_t k = 0; k < A.cols; ++k) {
+            float rA = A(i, k);
+            const float* b_row = &B(k, 0);
+            float* c_row = &C(i, 0);
+            
+            for (size_t j = 0; j < B.cols; ++j) {
+                // Prefetch B and C data 16 elements ahead (64 bytes / 1 typical cache line)
+                __builtin_prefetch(&b_row[j + 16], 0, 3); // 0=read, 3=high temporal locality
+                __builtin_prefetch(&c_row[j + 16], 1, 3); // 1=write
+                
+                c_row[j] += rA * b_row[j];
+            }
+        }
+    }
+}

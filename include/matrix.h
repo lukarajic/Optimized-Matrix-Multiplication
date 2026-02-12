@@ -77,4 +77,7 @@ void multiply_optimized_v6_register_blocked_2x2(const Matrix& A, const Matrix& B
 // Optimization v7: Multi-threading with Register Blocking (2x2)
 void multiply_optimized_v7_threaded_register_blocked(const Matrix& A, const Matrix& B, Matrix& C, unsigned int numThreads = 0);
 
+// Optimization v8: Software Prefetching to hide memory latency
+void multiply_optimized_v8_prefetch(const Matrix& A, const Matrix& B, Matrix& C);
+
 #endif // MATRIX_H

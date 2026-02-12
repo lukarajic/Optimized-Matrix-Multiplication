@@ -44,7 +44,8 @@ int main() {
         {"Opt V4 (SIMD)", multiply_optimized_v4_simd},
         {"Opt V5 (Thread)", [](const Matrix& A, const Matrix& B, Matrix& C) { multiply_optimized_v5_threaded(A, B, C); }},
         {"Opt V6 (RegBlk)", multiply_optimized_v6_register_blocked_2x2},
-        {"Opt V7 (Thread+RegBlk)", [](const Matrix& A, const Matrix& B, Matrix& C) { multiply_optimized_v7_threaded_register_blocked(A, B, C); }}
+        {"Opt V7 (Thread+RegBlk)", [](const Matrix& A, const Matrix& B, Matrix& C) { multiply_optimized_v7_threaded_register_blocked(A, B, C); }},
+        {"Opt V8 (Prefetch)", multiply_optimized_v8_prefetch}
     };
 
     bool all_passed = true;
